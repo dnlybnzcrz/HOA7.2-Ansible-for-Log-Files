@@ -1,0 +1,26 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: Install Updates in Ubuntu
+    tags: always
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Collect Log Files in Ubuntu
+    find:
+      paths: /var/log
+      patterns: '*.log'
+    register: log_files
+
+  - name: Copying the log files from Control Node to Manage Node
+    fetch:
+      src: "{{ item.path }}"
+      dest: "/tmp/logs/"
+      flat: yes
+    with_items: "{{ log_files.files }}"
+
